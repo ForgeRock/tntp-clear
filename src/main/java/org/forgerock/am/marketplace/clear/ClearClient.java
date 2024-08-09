@@ -36,9 +36,6 @@ public class ClearClient {
 
     private static final Logger logger = LoggerFactory.getLogger(ClearClient.class);
 
-    private static final String VERSION_PATH = "/v1/";
-    private static final String VERIFICATION_SESSION_PATH = "/verification_sessions/";
-
     private final Handler handler;
 
     /**
@@ -50,7 +47,7 @@ public class ClearClient {
     }
 
     /**
-     * the POST {{apiPath}}/v1/verification_sessions creates a verification_session on your server.
+     * the POST {apiPath}/v1/verification_sessions creates a verification_session on your server.
      *
      * @param apiKey The Clear API Key
      * @param projectId The project_id of the desired Clear project
@@ -63,13 +60,14 @@ public class ClearClient {
         String projectId,
         String redirectUrl) throws ClearServiceException {
 
-        // Create the request url
+        logger.error("API KEY: {}", apiKey);
+        logger.error("PROJ ID: {}", projectId);
+        logger.error("REDIRECT_URL ATTRIBUTE: {}", redirectUrl);
+
         Request request;
 
-        URI uri = URI.create(
-            "https://verified.clearme.com" +
-                    "/v1/" +
-                    "/verification_sessions/");
+        // Create the request url
+        URI uri = URI.create("https://verified.clearme.com/v1/verification_sessions/");
 
         // Create the request body
         JsonValue parameters = json(object(1));
@@ -80,7 +78,15 @@ public class ClearClient {
             request = new Request().setUri(uri).setMethod("POST");
             request.getEntity().setJson(parameters);
             addAuthorizationHeader(request, apiKey);
+            request.getHeaders().add("Accept", "*/*");
+
+            logger.error("API URI: {}", request.getUri());
+            logger.error("API METHOD: {}", request.getMethod());
+            logger.error("API DATA BODY: {}", request.getEntity().toString());
+
             Response response = handler.handle(new RootContext(), request).getOrThrow();
+            logger.error("API RESPONSE: {}", response.getEntity().toString());
+            logger.error("API STATUS: {}", response.getStatus());
             if (response.getStatus() == Status.CREATED || response.getStatus() == Status.OK) {
                 return json(response.getEntity().getJson());
             } else {
@@ -89,12 +95,12 @@ public class ClearClient {
                                                         + "-" + response.getEntity().getString());
             }
         } catch (MalformedHeaderException | InterruptedException | IOException e) {
-            throw new ClearServiceException("Failed to process client authorization" + e);
+            throw new ClearServiceException("Failed to process client verification" + e);
         }
     }
 
     /**
-     * the POST {{apiPath}}/v1/verification_sessions/{verification_session_id} retrieves data
+     * the GET {apiPath}/v1/verification_sessions/{verification_session_id} retrieves data
      * from a specific verification session using the Verification Session ID.
      *
      * @param apiKey The Clear API Key
@@ -102,17 +108,15 @@ public class ClearClient {
      * @return Json containing the response from the operation
      * @throws ClearServiceException When API response != 200
      */
-    public JsonValue retrieveUserVerificationResults(
+    public JsonValue getUserVerificationResults(
             String apiKey,
             String verificationSessionId) throws ClearServiceException {
 
-        // Create the request url
         Request request;
 
+        // Create the request url
         URI uri = URI.create(
-                "https://verified.clearme.com" +
-                        "/v1/" +
-                        "/verification_sessions/" +
+                "https://verified.clearme.com/v1/verification_sessions/" +
                         verificationSessionId);
 
         try {

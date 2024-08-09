@@ -49,11 +49,12 @@ import static java.util.Arrays.asList;
  * </p>
  * @since AM 5.5.0
  */
+
 public class ClearPlugin extends AbstractNodeAmPlugin {
-    protected static final String CURRENT_VERSION = "0.0.1";
-    protected static final String LOG_APPENDER = "[Version: " + CURRENT_VERSION + "][Marketplace] ";
+    protected static final String CURRENT_VERSION = "0.0.22";
+    protected static final String LOG_APPENDER = "[Version: " + CURRENT_VERSION + "][Marketplace]";
     private static final Logger logger = LoggerFactory.getLogger(ClearPlugin.class);
-    private String LOGGER_PREFIX = "[ClearPlugin]" + ClearPlugin.LOG_APPENDER;
+    private final String LOGGER_PREFIX = "[ClearPlugin]" + ClearPlugin.LOG_APPENDER;
 
     /**
      * Specify the Map of list of node classes that the plugin is providing. These will then be installed and

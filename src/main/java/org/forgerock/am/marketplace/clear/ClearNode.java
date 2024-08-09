@@ -7,52 +7,42 @@
  */
 package org.forgerock.am.marketplace.clear;
 
-import static org.forgerock.am.marketplace.clear.ClearNode.OutcomeProvider.CLIENT_ERROR_OUTCOME_ID;
-import static org.forgerock.am.marketplace.clear.ClearNode.OutcomeProvider.DENY_OUTCOME_ID;
-import static org.forgerock.am.marketplace.clear.ClearNode.OutcomeProvider.INDETERMINATE_OUTCOME_ID;
-import static org.forgerock.am.marketplace.clear.ClearNode.OutcomeProvider.PERMIT_OUTCOME_ID;
+import static org.forgerock.am.marketplace.clear.ClearNode.ClearOutcomeProvider.CLIENT_ERROR_OUTCOME_ID;
 
+import java.util.ResourceBundle;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.inject.Inject;
 
+import org.forgerock.openam.auth.node.api.StaticOutcomeProvider;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.forgerock.json.JsonValue;
 import org.forgerock.openam.annotations.sm.Attribute;
-import org.forgerock.openam.auth.node.api.*;
-import org.forgerock.openam.integration.pingone.PingOneWorkerService;
+import org.forgerock.openam.auth.node.api.NodeState;
 import org.forgerock.util.i18n.PreferredLocales;
-import org.forgerock.openam.core.realms.Realm;
+import org.forgerock.openam.auth.node.api.*;
+import org.forgerock.json.JsonValue;
 
-import com.google.inject.assistedinject.Assisted;
+import com.sun.identity.authentication.spi.RedirectCallback;
 import com.sun.identity.sm.RequiredValueValidator;
-import org.slf4j.Logger;
+import com.google.inject.assistedinject.Assisted;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 /**
  * The Clear node lets administrators verify users using a link to CLEAR's hosted UI inside a journey.
  */
-@Node.Metadata(outcomeProvider = ClearNode.OutcomeProvider.class,
+@Node.Metadata(outcomeProvider = ClearNode.ClearOutcomeProvider.class,
                configClass = ClearNode.Config.class,
                tags = {"marketplace", "trustnetwork"})
 public class ClearNode extends SingleOutcomeNode {
 
     private static final Logger logger = LoggerFactory.getLogger(ClearNode.class);
-    private static final String LOGGER_PREFIX = "[PingOneAuthorizeNode]" + ClearPlugin.LOG_APPENDER;
+    private static final String LOGGER_PREFIX = "[ClearNode]" + ClearPlugin.LOG_APPENDER;
 
     private static final String BUNDLE = ClearNode.class.getName();
-
-    // Attribute keys
-    public static final String STATEMENTCODESATTR = "statementCodes";
-    public static final String USECONTINUEATTR = "useContinue";
-
-    // Outcomes
-    private static final String PERMIT = "PERMIT";
-    private static final String DENY = "DENY";
-    private static final String INDETERMINATE = "INDETERMINATE";
 
     private final Config config;
     private final ClearClient client;
@@ -80,7 +70,7 @@ public class ClearNode extends SingleOutcomeNode {
         /**
          * Shared state attribute containing the Redirect URL
          *
-         * @return The Redirect URL shared state attribute
+         * @return The Redirect URL shared state attribute    redirectUrl
          */
         @Attribute(order = 300)
         String redirectUrl();
@@ -100,48 +90,58 @@ public class ClearNode extends SingleOutcomeNode {
 
     @Override
     public Action process(TreeContext context) {
+
         // Create the flow input based on the node state
         NodeState nodeState = context.getStateFor(this);
 
         try {
-            // API call to create verification session
-            JsonValue verificationSessionResponse = client.createVerificationSession(
-                    config.apiKey(),
-                    config.projectId(),
-                    config.redirectUrl()
-            );
+            // Check if verification session id is set in sharedState
+            String sharedStateSessionId = nodeState.isDefined("sessionId")
+                    ? nodeState.get("sessionId").asString()
+                    : null;
 
-            /* TO-DO:
-                Create Redirect
-             */
+            logger.error("SHARED STATE SESSION ID: {}", sharedStateSessionId);
 
-//            if (responseCode == 200) {
-//                JSONObject jo = new JSONObject(streamToString);
-//                redirectURL = (String) jo.getJSONArray("tokens").getJSONObject(0).getString("accessUrl");
-//
-//
-//                RedirectCallback redirectCallback = new RedirectCallback(redirectURL, null, "GET");
-//                redirectCallback.setTrackingCookie(true);
-//                return Action.send(redirectCallback).build();
-//            }
+            if (StringUtils.isBlank(sharedStateSessionId)) {
+                logger.error("<----------------- CREATING VERIFICATION SESSION ----------------->");
+                // API call to create verification session
+                JsonValue verificationSessionResponse = client.createVerificationSession(
+                        config.apiKey(),
+                        config.projectId(),
+                        config.redirectUrl()
+                );
 
-            // Create and send API call
-            JsonValue verificationResultsResponse = client.retrieveUserVerificationResults(
-                    config.apiKey(),
-                    config.projectId()
-            );
+                // Clear verification session id for the GET request after we redirect
+                String verificationSessionId = verificationSessionResponse.get("id").asString();
+                logger.error("VERIFICATION SESSION ID: {}", verificationSessionId);
+                nodeState.putShared("sessionId", verificationSessionId);
+                logger.error("SESSION ID IN SHARED STATE: {}", nodeState.get("sessionId").asString());
 
-            // The API response's "decision" value will determine which outcome is executed
-            String decision = "";
-            switch (decision) {
-                case PERMIT:
-                    return Action.goTo(PERMIT_OUTCOME_ID).build();
-                case DENY:
-                    return Action.goTo(DENY_OUTCOME_ID).build();
-                case INDETERMINATE:
-                    return Action.goTo(INDETERMINATE_OUTCOME_ID).build();
-                default:
-                    return Action.goTo(CLIENT_ERROR_OUTCOME_ID).build();
+                // Retrieves the verification session token for CLEAR redirect
+                String sessionToken = verificationSessionResponse.get("token").asString();
+
+                // Redirect URL
+                RedirectCallback redirectCallback = new RedirectCallback(
+                        "https://verified.clearme.com/verify?token=" + sessionToken,
+                        null,
+                        "GET"
+                );
+
+                redirectCallback.setTrackingCookie(true);
+                return Action.send(redirectCallback).build();
+
+            } else {
+                logger.error("<----------------- RETRIEVING VERIFICATION RESULTS ----------------->");
+                // API Call to retrieve user verification results
+                JsonValue verificationResultsResponse = client.getUserVerificationResults(
+                        config.apiKey(),
+                        sharedStateSessionId
+                );
+
+                // Retrieve the API response
+                nodeState.putTransient("verificationResults", verificationResultsResponse);
+
+                return Action.goTo(ClearOutcomeProvider.CONTINUE_OUTCOME_ID).build();
             }
 
         } catch (Exception ex) {
@@ -169,40 +169,18 @@ public class ClearNode extends SingleOutcomeNode {
         };
     }
 
-    public static class OutcomeProvider implements org.forgerock.openam.auth.node.api.OutcomeProvider {
+    public static class ClearOutcomeProvider implements StaticOutcomeProvider {
 
-        static final String PERMIT_OUTCOME_ID = "permit";
-        static final String DENY_OUTCOME_ID = "deny";
-        static final String INDETERMINATE_OUTCOME_ID = "indeterminate";
         static final String CONTINUE_OUTCOME_ID = "continue";
         static final String CLIENT_ERROR_OUTCOME_ID = "clientError";
 
         @Override
-        public List<Outcome> getOutcomes(PreferredLocales locales, JsonValue nodeAttributes) throws NodeProcessException {
-
-            ResourceBundle bundle = locales.getBundleInPreferredLocale(BUNDLE, OutcomeProvider.class.getClassLoader());
+        public List<Outcome> getOutcomes(PreferredLocales locales) {
+            ResourceBundle bundle = locales.getBundleInPreferredLocale(BUNDLE, ClearOutcomeProvider.class.getClassLoader());
 
             ArrayList<Outcome> outcomes = new ArrayList<>();
 
-            // Retrieves the current state of the continue button
-            String useContinue = nodeAttributes.get(USECONTINUEATTR).toString();
-
-            // Do not render other outcomes if button = "true"
-            if (useContinue.contains("true")) {
-                outcomes.add(new Outcome(CONTINUE_OUTCOME_ID, bundle.getString(CONTINUE_OUTCOME_ID)));
-            } else {
-                outcomes.add(new Outcome(PERMIT_OUTCOME_ID, bundle.getString(PERMIT_OUTCOME_ID)));
-                outcomes.add(new Outcome(DENY_OUTCOME_ID, bundle.getString(DENY_OUTCOME_ID)));
-                outcomes.add(new Outcome(INDETERMINATE_OUTCOME_ID, bundle.getString(INDETERMINATE_OUTCOME_ID)));
-                if (nodeAttributes.isNotNull()) {
-                    // nodeAttributes is null when the node is created
-                    nodeAttributes.get(STATEMENTCODESATTR).required()
-                                  .asList(String.class)
-                                  .stream()
-                                  .map(outcome -> new Outcome(outcome, outcome))
-                                  .forEach(outcomes::add);
-                }
-            }
+            outcomes.add(new Outcome(CONTINUE_OUTCOME_ID, bundle.getString(CONTINUE_OUTCOME_ID)));
             outcomes.add(new Outcome(CLIENT_ERROR_OUTCOME_ID, bundle.getString(CLIENT_ERROR_OUTCOME_ID)));
 
             return outcomes;
