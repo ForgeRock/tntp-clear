@@ -15,13 +15,14 @@ import java.util.*;
 
 import javax.inject.Inject;
 
-import org.forgerock.openam.auth.node.api.StaticOutcomeProvider;
+
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.forgerock.openam.annotations.sm.Attribute;
 import org.forgerock.openam.auth.node.api.NodeState;
 import org.forgerock.util.i18n.PreferredLocales;
 import org.forgerock.openam.auth.node.api.*;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openam.auth.node.api.OutcomeProvider;
 
 import com.sun.identity.authentication.spi.RedirectCallback;
 import com.sun.identity.sm.RequiredValueValidator;
@@ -35,7 +36,7 @@ import org.slf4j.Logger;
 @Node.Metadata(outcomeProvider = ClearNode.ClearOutcomeProvider.class,
                configClass = ClearNode.Config.class,
                tags = {"marketplace", "trustnetwork"})
-public class ClearNode extends SingleOutcomeNode {
+public class ClearNode implements Node {
 
     private static final Logger logger = LoggerFactory.getLogger(ClearNode.class);
     private static final String LOGGER_PREFIX = "[ClearNode]" + ClearPlugin.LOG_APPENDER;
@@ -198,13 +199,13 @@ public class ClearNode extends SingleOutcomeNode {
         };
     }
 
-    public static class ClearOutcomeProvider implements StaticOutcomeProvider {
+    public static class ClearOutcomeProvider implements OutcomeProvider {
 
         static final String CONTINUE_OUTCOME_ID = "continue";
         static final String CLIENT_ERROR_OUTCOME_ID = "clientError";
 
         @Override
-        public List<Outcome> getOutcomes(PreferredLocales locales) {
+        public List<Outcome> getOutcomes(PreferredLocales locales, JsonValue jsonValue) {
             ResourceBundle bundle = locales.getBundleInPreferredLocale(BUNDLE, ClearOutcomeProvider.class.getClassLoader());
 
             ArrayList<Outcome> outcomes = new ArrayList<>();
