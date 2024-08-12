@@ -5,28 +5,30 @@
  *
  * Copyright 2024 Ping Identity Corporation. All Rights Reserved
  */
+
 package org.forgerock.am.marketplace.clear;
 
-import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.json.JsonValue.json;
+
+import javax.inject.Singleton;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import java.io.IOException;
 import java.net.URI;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 import org.forgerock.http.header.MalformedHeaderException;
 import org.forgerock.http.header.authorization.BearerToken;
 import org.forgerock.http.header.AuthorizationHeader;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Status;
-import org.forgerock.http.Handler;
 import org.forgerock.json.JsonValue;
-import org.forgerock.services.context.RootContext;
-import org.slf4j.Logger;
+import org.forgerock.http.Handler;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 /**
  * Service to integrate with CLEARs API and UI.
@@ -49,20 +51,18 @@ public class ClearClient {
     /**
      * the POST {apiPath}/v1/verification_sessions creates a verification_session on your server.
      *
-     * @param apiKey The Clear API Key
-     * @param projectId The project_id of the desired Clear project
+     * @param apiKey The CLEAR API Key
+     * @param projectId The project_id of the desired CLEAR project
      * @param redirectUrl The Redirect URL for after the verification session
+     * @param nonce The Nonce included with the Redirect URL
      * @return Json containing the response from the operation
      * @throws ClearServiceException When API response != 200
      */
     public JsonValue createVerificationSession(
         String apiKey,
         String projectId,
-        String redirectUrl) throws ClearServiceException {
-
-        logger.error("API KEY: {}", apiKey);
-        logger.error("PROJ ID: {}", projectId);
-        logger.error("REDIRECT_URL ATTRIBUTE: {}", redirectUrl);
+        String redirectUrl,
+        String nonce) throws ClearServiceException {
 
         Request request;
 
@@ -72,25 +72,18 @@ public class ClearClient {
         // Create the request body
         JsonValue parameters = json(object(1));
         parameters.put("project_id", projectId);
-        parameters.put("redirect_url", redirectUrl);
+        parameters.put("redirect_url", redirectUrl + "?nonce=" + nonce);
 
         try {
             request = new Request().setUri(uri).setMethod("POST");
             request.getEntity().setJson(parameters);
             addAuthorizationHeader(request, apiKey);
             request.getHeaders().add("Accept", "*/*");
-
-            logger.error("API URI: {}", request.getUri());
-            logger.error("API METHOD: {}", request.getMethod());
-            logger.error("API DATA BODY: {}", request.getEntity().toString());
-
             Response response = handler.handle(new RootContext(), request).getOrThrow();
-            logger.error("API RESPONSE: {}", response.getEntity().toString());
-            logger.error("API STATUS: {}", response.getStatus());
             if (response.getStatus() == Status.CREATED || response.getStatus() == Status.OK) {
                 return json(response.getEntity().getJson());
             } else {
-                throw new ClearServiceException("Clear API response with error."
+                throw new ClearServiceException("CLEAR API response with error."
                                                         + response.getStatus()
                                                         + "-" + response.getEntity().getString());
             }
@@ -100,11 +93,11 @@ public class ClearClient {
     }
 
     /**
-     * the GET {apiPath}/v1/verification_sessions/{verification_session_id} retrieves data
-     * from a specific verification session using the Verification Session ID.
+     * the GET {apiPath}/v1/verification_sessions/{verification_session_id} retrieves authentication
+     * data from a specific verification session using the Verification Session ID.
      *
-     * @param apiKey The Clear API Key
-     * @param verificationSessionId The Clear Verification Session ID
+     * @param apiKey The CLEAR API Key
+     * @param verificationSessionId The CLEAR Verification Session ID
      * @return Json containing the response from the operation
      * @throws ClearServiceException When API response != 200
      */
@@ -122,11 +115,12 @@ public class ClearClient {
         try {
             request = new Request().setUri(uri).setMethod("GET");
             addAuthorizationHeader(request, apiKey);
+            request.getHeaders().add("Accept", "*/*");
             Response response = handler.handle(new RootContext(), request).getOrThrow();
             if (response.getStatus() == Status.CREATED || response.getStatus() == Status.OK) {
                 return json(response.getEntity().getJson());
             } else {
-                throw new ClearServiceException("Clear API response with error."
+                throw new ClearServiceException("CLEAR API response with error."
                         + response.getStatus()
                         + "-" + response.getEntity().getString());
             }

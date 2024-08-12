@@ -9,10 +9,9 @@ package org.forgerock.am.marketplace.clear;
 
 import static org.forgerock.am.marketplace.clear.ClearNode.ClearOutcomeProvider.CLIENT_ERROR_OUTCOME_ID;
 
-import java.util.ResourceBundle;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.security.SecureRandom;
+import java.math.BigInteger;
+import java.util.*;
 
 import javax.inject.Inject;
 
@@ -27,7 +26,6 @@ import org.forgerock.json.JsonValue;
 import com.sun.identity.authentication.spi.RedirectCallback;
 import com.sun.identity.sm.RequiredValueValidator;
 import com.google.inject.assistedinject.Assisted;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
@@ -42,27 +40,34 @@ public class ClearNode extends SingleOutcomeNode {
     private static final Logger logger = LoggerFactory.getLogger(ClearNode.class);
     private static final String LOGGER_PREFIX = "[ClearNode]" + ClearPlugin.LOG_APPENDER;
 
+    private static final String VERIFICATION_SESSION_ID = "id";
+    private static final String VERIFICATION_SESSION_TOKEN = "token";
+    private static final String SESSION_ID = "sessionId";
+    private static final String NONCE = "nonce";
+
     private static final String BUNDLE = ClearNode.class.getName();
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final Config config;
     private final ClearClient client;
 
     /**
-     * Configuration for the node.
+     * Configuration for the CLEAR node.
      */
     public interface Config {
         /**
-         * Shared state attribute containing Clear API Key
+         * Shared state attribute containing CLEAR API Key
          *
-         * @return The Clear API Key shared state attribute
+         * @return The CLEAR API Key shared state attribute
          */
         @Attribute(order = 100, requiredValue = true)
         String apiKey();
 
         /**
-         * Shared state attribute containing Clear Project ID
+         * Shared state attribute containing CLEAR Project ID
          *
-         * @return The Clear Project ID shared state attribute
+         * @return The CLEAR Project ID shared state attribute
          */
         @Attribute(order = 200, validators = {RequiredValueValidator.class})
         String projectId();
@@ -70,17 +75,17 @@ public class ClearNode extends SingleOutcomeNode {
         /**
          * Shared state attribute containing the Redirect URL
          *
-         * @return The Redirect URL shared state attribute    redirectUrl
+         * @return The Redirect URL shared state attribute
          */
         @Attribute(order = 300)
         String redirectUrl();
     }
 
     /**
-     * The Clear node constructor.
+     * The CLEAR node constructor.
      *
-     * @param config               the node configuration.
-     * @param client               the {@link ClearClient} instance.
+     * @param config the node configuration.
+     * @param client the {@link ClearClient} instance.
      */
     @Inject
     public ClearNode(@Assisted Config config, ClearClient client) {
@@ -94,51 +99,72 @@ public class ClearNode extends SingleOutcomeNode {
         // Create the flow input based on the node state
         NodeState nodeState = context.getStateFor(this);
 
+        Map<String, List<String>> parameters = context.request.parameters;
+
         try {
+
+            /*
+                TO-DO: Fix shared state issue
+            */
             // Check if verification session id is set in sharedState
-            String sharedStateSessionId = nodeState.isDefined("sessionId")
-                    ? nodeState.get("sessionId").asString()
+            String sharedStateSessionId = nodeState.isDefined(SESSION_ID)
+                    ? nodeState.get(SESSION_ID).asString()
                     : null;
 
-            logger.error("SHARED STATE SESSION ID: {}", sharedStateSessionId);
+            // Checks if NONCE value exists in the parameters object.
+            // If not, continue to create verification session
+            if (!parameters.containsKey(NONCE)) {
 
-            if (StringUtils.isBlank(sharedStateSessionId)) {
-                logger.error("<----------------- CREATING VERIFICATION SESSION ----------------->");
+                // Create nonce value to include with the API Call's redirect URL
+                String nonce = generateNonce();
+
                 // API call to create verification session
                 JsonValue verificationSessionResponse = client.createVerificationSession(
                         config.apiKey(),
                         config.projectId(),
-                        config.redirectUrl()
+                        config.redirectUrl(),
+                        nonce
                 );
 
-                // Clear verification session id for the GET request after we redirect
-                String verificationSessionId = verificationSessionResponse.get("id").asString();
-                logger.error("VERIFICATION SESSION ID: {}", verificationSessionId);
-                nodeState.putShared("sessionId", verificationSessionId);
-                logger.error("SESSION ID IN SHARED STATE: {}", nodeState.get("sessionId").asString());
+                // Store the `verification_session.id` from the response
+                // This ID will be used in the GET request after redirecting from CLEAR to the final URL
+                String verificationSessionId = verificationSessionResponse.get(VERIFICATION_SESSION_ID).asString();
 
-                // Retrieves the verification session token for CLEAR redirect
-                String sessionToken = verificationSessionResponse.get("token").asString();
+                // Add `verification_session.id` and the newly generated nonce to node shared state
+                nodeState.putShared(SESSION_ID, verificationSessionId);
+                nodeState.putShared(NONCE, nonce);
 
-                // Redirect URL
+                // Store the `verification_session.token` for the redirect to CLEAR's verification UI
+                String sessionToken = verificationSessionResponse.get(VERIFICATION_SESSION_TOKEN).asString();
+
+                // Building and executing the CLEAR redirect URL
                 RedirectCallback redirectCallback = new RedirectCallback(
                         "https://verified.clearme.com/verify?token=" + sessionToken,
                         null,
                         "GET"
                 );
-
                 redirectCallback.setTrackingCookie(true);
                 return Action.send(redirectCallback).build();
 
             } else {
-                logger.error("<----------------- RETRIEVING VERIFICATION RESULTS ----------------->");
-                // API Call to retrieve user verification results
+
+                // Retrieve the nonce values from authentication tree context
+                String nonce = parameters.get(NONCE).get(0);
+                String nonceState = nodeState.get(NONCE).asString();
+
+                // Security comparison for nonce values
+                if (!nonceState.equals(nonce)) {
+                    logger.error("Mismatched nonce value exiting out of journey.");
+                    return Action.goTo(CLIENT_ERROR_OUTCOME_ID).build();
+                }
+
+                // API call to check user's authentication status
                 JsonValue verificationResultsResponse = client.getUserVerificationResults(
                         config.apiKey(),
                         sharedStateSessionId
                 );
 
-                // Retrieve the API response
+                // Store the user's verification results
                 nodeState.putTransient("verificationResults", verificationResultsResponse);
 
                 return Action.goTo(ClearOutcomeProvider.CONTINUE_OUTCOME_ID).build();
@@ -153,19 +179,22 @@ public class ClearNode extends SingleOutcomeNode {
         }
     }
 
+    private static String generateNonce() {
+        return new BigInteger(160, SECURE_RANDOM).toString(Character.MAX_RADIX);
+    }
+
     @Override
     public InputState[] getInputs() {
         return new InputState[] {
-                new InputState(config.apiKey(), false),
-                new InputState(config.projectId(), false),
-                new InputState(config.redirectUrl(), false)
+                new InputState(SESSION_ID, false),
+                new InputState(NONCE, false)
         };
     }
 
     @Override
     public OutputState[] getOutputs() {
         return new OutputState[]{
-            new OutputState("decision")
+            new OutputState("verificationResults")
         };
     }
 
