@@ -155,7 +155,6 @@ public class ClearNode implements Node {
 
             }
             else {
-
                 // Retrieve the nonce values from authentication tree context
                 String nonce = parameters.get(NONCE).get(0);
                 String nonceState = nodeState.get(NONCE).asString();
@@ -181,7 +180,6 @@ public class ClearNode implements Node {
                     config.apiKey(),
                     sharedStateSessionId
                                                                                          );
-
                 // Store the user's verification results
                 nodeState.putTransient("verificationResults", verificationResultsResponse);
 

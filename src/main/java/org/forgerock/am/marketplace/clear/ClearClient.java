@@ -36,8 +36,6 @@ import org.slf4j.Logger;
 @Singleton
 public class ClearClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(ClearClient.class);
-
     private final Handler handler;
 
     /**
