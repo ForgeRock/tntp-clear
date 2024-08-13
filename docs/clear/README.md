@@ -68,17 +68,13 @@ No external inputs required.
 
 ## Outputs
 
-This node retrieves the user's verification results and stores them in transient state.
+None
 
 ## Outcomes
 
-`Continue`
+`Continue` Successfully verified and redirected the user.
 
-Successfully verified and redirected the user.
-
-`Error`
-
-There was an error during the verification process.
+`Error` There was an error during the verification process.
 
 ## Troubleshooting
 
