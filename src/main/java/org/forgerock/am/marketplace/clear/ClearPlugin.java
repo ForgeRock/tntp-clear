@@ -51,7 +51,7 @@ import static java.util.Arrays.asList;
  */
 
 public class ClearPlugin extends AbstractNodeAmPlugin {
-    protected static final String CURRENT_VERSION = "0.0.36";
+    protected static final String CURRENT_VERSION = "0.0.37";
     protected static final String LOG_APPENDER = "[Version: " + CURRENT_VERSION + "][Marketplace]";
     private static final Logger logger = LoggerFactory.getLogger(ClearPlugin.class);
     private final String LOGGER_PREFIX = "[ClearPlugin]" + ClearPlugin.LOG_APPENDER;

@@ -15,7 +15,6 @@ import java.util.*;
 
 import javax.inject.Inject;
 
-
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.forgerock.openam.annotations.sm.Attribute;
 import org.forgerock.openam.auth.node.api.NodeState;
@@ -78,7 +77,7 @@ public class ClearNode implements Node {
          *
          * @return The Redirect URL shared state attribute
          */
-        @Attribute(order = 300)
+        @Attribute(order = 300, requiredValue = true)
         String redirectUrl();
 
         /**
