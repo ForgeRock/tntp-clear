@@ -15,7 +15,7 @@
     <artifactId>TNTPClear</artifactId>
 
     <groupId>org.forgerock.am.marketplace</groupId>
-    <version>0.0.37</version>
+    <version>1.0.0</version>
     <name>Clear</name>
     <description>Clear Integration</description>
 
@@ -81,11 +81,6 @@
             <artifactId>openam-core</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!--<dependency>
-            <groupId>org.forgerock.am</groupId>
-            <artifactId>identity-api</artifactId>
-            <scope>provided</scope>
-        </dependency> -->
         <dependency>
             <groupId>org.forgerock.am</groupId>
             <artifactId>service-config-api</artifactId>
@@ -95,60 +90,10 @@
             <groupId>org.forgerock.am</groupId>
             <artifactId>openam-oauth2</artifactId>
         </dependency>
-        <!--<dependency>
-            <groupId>org.forgerock.am</groupId>
-            <artifactId>auth-nodes</artifactId>
-            <version>${am.version}</version>
-            <scope>provided</scope>
-        </dependency>-->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-inline</artifactId>
-            <version>4.3.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.10.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.10.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>5.10.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.forgerock.am</groupId>
-            <artifactId>openam-shared</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <!--<dependency>
-            <groupId>org.forgerock.am</groupId>
-            <artifactId>scripting-api</artifactId>
-            <scope>compile</scope>
-        </dependency>-->
-        <dependency>
-            <groupId>org.forgerock.am</groupId>
-            <artifactId>openam-test-utils</artifactId>
         </dependency>
     </dependencies>
 
