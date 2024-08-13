@@ -33,7 +33,7 @@ The CLEAR ID Verification node lets administrators integrate CLEAR's hosted UI f
 
 ## Inputs
 
-Everything this node needs is configured within the node.
+No external inputs required.
 
 ## Configuration
 

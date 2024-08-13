@@ -14,10 +14,7 @@ Identity Cloud provides the following artifacts to enable the CLEAR ID Verificat
 
 * [CLEAR ID Verification](https://github.com/ForgeRock/tntp-clear/blob/main/docs/clear/README.md)
 
-You must set up the following before using the CLEAR Verification ID node.
-
-CLEAR Setup:
-* TBD
+For additional setup steps in regard to CLEAR's tenant, please contact the CLEAR team **[here](https://www.clearme.com/for-your-business?utm_source=website&utm_medium=nav-bar#:~:text=Request%20a%20Demo%20From%20Our%20Team)**.
 
 <!-- SUPPORT -->
 ## Support

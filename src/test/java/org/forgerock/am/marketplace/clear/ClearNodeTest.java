@@ -15,7 +15,6 @@
 //import static org.forgerock.json.JsonValue.object;
 //import static org.forgerock.am.marketplace.clear.ClearNode.ClearOutcomeProvider.CLIENT_ERROR_OUTCOME_ID;
 //import static org.forgerock.openam.auth.node.api.SharedStateConstants.REALM;
-//import static org.forgerock.openam.auth.node.api.SharedStateConstants.USERNAME;
 //import static org.mockito.ArgumentMatchers.any;
 //import static org.mockito.BDDMockito.given;
 //import static org.mockito.Mockito.when;
@@ -46,6 +45,7 @@
 //    @Mock
 //    ClearClient client;
 //
+//    @Mock
 //    ClearNode node;
 //
 //    @BeforeEach
@@ -84,16 +84,12 @@
 //
 //    @Test
 //    public void testGetInputs() {
-//        given(config.apiKey()).willReturn("");
-//        given(config.projectId()).willReturn("");
-//        given(config.redirectUrl()).willReturn("");
-//
 //        InputState[] inputs = node.getInputs();
 //
-//        assertThat(inputs[0].name).isEqualTo("");
+//        assertThat(inputs[0].name).isEqualTo("id");
 //        assertThat(inputs[0].required).isEqualTo(false);
 //
-//        assertThat(inputs[1].name).isEqualTo("");
+//        assertThat(inputs[1].name).isEqualTo("token");
 //        assertThat(inputs[1].required).isEqualTo(false);
 //    }
 //
