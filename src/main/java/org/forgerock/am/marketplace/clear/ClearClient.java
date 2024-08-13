@@ -27,8 +27,6 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.http.Handler;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 
 /**
  * Service to integrate with CLEARs API and UI.
