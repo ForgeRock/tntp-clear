@@ -8,7 +8,7 @@
 
 This integration creates a verification session, directs the user to CLEAR's hosted UI for verification, and then redirects them to the final URL assigned by the administrator. This verification includes:
 
-* [CLEAR's Verification UI Link](https://docs.clearme.com/docs/link-integration#create-a-verification-session)
+* [CLEAR's Verification UI Link](https://docs.clearme.com/docs/link-integration)
 
 Identity Cloud provides the following artifacts to enable the CLEAR ID Verification Node:
 
@@ -17,7 +17,7 @@ Identity Cloud provides the following artifacts to enable the CLEAR ID Verificat
 You must set up the following before using the CLEAR Verification ID node.
 
 CLEAR Setup:
-* [Access CLEAR Verified Dashboard]()
+* TBD
 
 <!-- SUPPORT -->
 ## Support
