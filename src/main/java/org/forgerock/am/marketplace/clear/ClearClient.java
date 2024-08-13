@@ -51,10 +51,10 @@ public class ClearClient {
     /**
      * the POST {apiPath}/v1/verification_sessions creates a verification_session on your server.
      *
-     * @param apiKey The CLEAR API Key
-     * @param projectId The project_id of the desired CLEAR project
+     * @param apiKey      The CLEAR API Key
+     * @param projectId   The project_id of the desired CLEAR project
      * @param redirectUrl The Redirect URL for after the verification session
-     * @param nonce The Nonce included with the Redirect URL
+     * @param nonce       The Nonce included with the Redirect URL
      * @return Json containing the response from the operation
      * @throws ClearServiceException When API response != 200
      */
@@ -82,12 +82,14 @@ public class ClearClient {
             Response response = handler.handle(new RootContext(), request).getOrThrow();
             if (response.getStatus() == Status.CREATED || response.getStatus() == Status.OK) {
                 return json(response.getEntity().getJson());
-            } else {
-                throw new ClearServiceException("CLEAR API response with error."
-                                                        + response.getStatus()
-                                                        + "-" + response.getEntity().getString());
             }
-        } catch (MalformedHeaderException | InterruptedException | IOException e) {
+            else {
+                throw new ClearServiceException("CLEAR API response with error."
+                                                + response.getStatus()
+                                                + "-" + response.getEntity().getString());
+            }
+        }
+        catch (MalformedHeaderException | InterruptedException | IOException e) {
             throw new ClearServiceException("Failed to process client verification" + e);
         }
     }
@@ -96,23 +98,23 @@ public class ClearClient {
      * the GET {apiPath}/v1/verification_sessions/{verification_session_id} retrieves authentication
      * data from a specific verification session using the Verification Session ID.
      *
-     * @param apiKey The CLEAR API Key
+     * @param apiKey                The CLEAR API Key
      * @param verificationSessionId The CLEAR Verification Session ID
      * @return Json containing the response from the operation
      * @throws ClearServiceException When API response != 200
      */
     public JsonValue getUserVerificationResults(
-            String verificationResultsEndpoint,
-            String apiKey,
-            String verificationSessionId) throws ClearServiceException {
+        String verificationResultsEndpoint,
+        String apiKey,
+        String verificationSessionId) throws ClearServiceException {
 
         Request request;
 
         // Create the request url
         URI uri = URI.create(
-                verificationResultsEndpoint +
-                        "/v1/verification_sessions/" +
-                        verificationSessionId);
+            verificationResultsEndpoint +
+            "/v1/verification_sessions/" +
+            verificationSessionId);
 
         try {
             request = new Request().setUri(uri).setMethod("GET");
@@ -121,12 +123,14 @@ public class ClearClient {
             Response response = handler.handle(new RootContext(), request).getOrThrow();
             if (response.getStatus() == Status.CREATED || response.getStatus() == Status.OK) {
                 return json(response.getEntity().getJson());
-            } else {
-                throw new ClearServiceException("CLEAR API response with error."
-                        + response.getStatus()
-                        + "-" + response.getEntity().getString());
             }
-        } catch (MalformedHeaderException | InterruptedException | IOException e) {
+            else {
+                throw new ClearServiceException("CLEAR API response with error."
+                                                + response.getStatus()
+                                                + "-" + response.getEntity().getString());
+            }
+        }
+        catch (MalformedHeaderException | InterruptedException | IOException e) {
             throw new ClearServiceException("Failed to process client authorization" + e);
         }
     }
@@ -134,7 +138,7 @@ public class ClearClient {
     /**
      * Add the Authorization header to the request.
      *
-     * @param request The request to add the header
+     * @param request     The request to add the header
      * @param accessToken The accessToken to add the header
      * @throws MalformedHeaderException When failed to add the header
      */

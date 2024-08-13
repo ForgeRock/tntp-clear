@@ -86,7 +86,7 @@ public class ClearNode implements Node {
          * @return True if the toggle is set to the Secure Endpoint, otherwise false
          */
         @Attribute(order = 400)
-        default boolean secureEndpointToggle(){
+        default boolean secureEndpointToggle() {
             return true;
         }
     }
@@ -115,8 +115,8 @@ public class ClearNode implements Node {
         try {
             // Check if verification session id is set in sharedState
             String sharedStateSessionId = nodeState.isDefined(SESSION_ID)
-                    ? nodeState.get(SESSION_ID).asString()
-                    : null;
+                                          ? nodeState.get(SESSION_ID).asString()
+                                          : null;
 
             // Checks if NONCE value exists in the API request parameters.
             // If false, create the verification session
@@ -127,11 +127,11 @@ public class ClearNode implements Node {
 
                 // API call to create verification session
                 JsonValue verificationSessionResponse = client.createVerificationSession(
-                        config.apiKey(),
-                        config.projectId(),
-                        config.redirectUrl(),
-                        nonce
-                );
+                    config.apiKey(),
+                    config.projectId(),
+                    config.redirectUrl(),
+                    nonce
+                                                                                        );
 
                 // Store the `verification_session.id` from the response
                 // This will be used to identify which session the GET request will return data for
@@ -146,14 +146,15 @@ public class ClearNode implements Node {
 
                 // Building and executing the CLEAR redirect URL
                 RedirectCallback redirectCallback = new RedirectCallback(
-                        "https://verified.clearme.com/verify?token=" + sessionToken,
-                        null,
-                        "GET"
+                    "https://verified.clearme.com/verify?token=" + sessionToken,
+                    null,
+                    "GET"
                 );
                 redirectCallback.setTrackingCookie(true);
                 return Action.send(redirectCallback).build();
 
-            } else {
+            }
+            else {
 
                 // Retrieve the nonce values from authentication tree context
                 String nonce = parameters.get(NONCE).get(0);
@@ -169,16 +170,17 @@ public class ClearNode implements Node {
                 String verificationResultsEndpoint;
                 if (config.secureEndpointToggle()) {
                     verificationResultsEndpoint = "https://secure.verified.clearme.com";
-                } else {
+                }
+                else {
                     verificationResultsEndpoint = "https://verified.clearme.com";
                 }
 
                 // API call to check user's authentication status
                 JsonValue verificationResultsResponse = client.getUserVerificationResults(
-                        verificationResultsEndpoint,
-                        config.apiKey(),
-                        sharedStateSessionId
-                );
+                    verificationResultsEndpoint,
+                    config.apiKey(),
+                    sharedStateSessionId
+                                                                                         );
 
                 // Store the user's verification results
                 nodeState.putTransient("verificationResults", verificationResultsResponse);
@@ -186,7 +188,8 @@ public class ClearNode implements Node {
                 return Action.goTo(ClearOutcomeProvider.CONTINUE_OUTCOME_ID).build();
             }
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             String stackTrace = ExceptionUtils.getStackTrace(ex);
             logger.error(LOGGER_PREFIX + "Exception occurred: ", ex);
             context.getStateFor(this).putTransient(LOGGER_PREFIX + "Exception", new Date() + ": " + ex.getMessage());
@@ -201,9 +204,9 @@ public class ClearNode implements Node {
 
     @Override
     public InputState[] getInputs() {
-        return new InputState[] {
-                new InputState(SESSION_ID, false),
-                new InputState(NONCE, false)
+        return new InputState[]{
+            new InputState(SESSION_ID, false),
+            new InputState(NONCE, false)
         };
     }
 

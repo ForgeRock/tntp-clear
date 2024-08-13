@@ -20,9 +20,9 @@ import org.slf4j.LoggerFactory;
 import static java.util.Arrays.asList;
 
 /**
- * Definition of an <a href="https://backstage.forgerock.com/docs/am/6/apidocs/org/forgerock/openam/auth/node/api/AbstractNodeAmPlugin.html">AbstractNodeAmPlugin</a>. 
- * Implementations can use {@code @Inject} setters to get access to APIs 
- * available via Guice dependency injection. For example, if you want to add an SMS service on install, you 
+ * Definition of an <a href="https://backstage.forgerock.com/docs/am/6/apidocs/org/forgerock/openam/auth/node/api/AbstractNodeAmPlugin.html">AbstractNodeAmPlugin</a>.
+ * Implementations can use {@code @Inject} setters to get access to APIs
+ * available via Guice dependency injection. For example, if you want to add an SMS service on install, you
  * can add the following setter:
  * <pre><code>
  * {@code @Inject}
@@ -31,22 +31,23 @@ import static java.util.Arrays.asList;
  * }
  * </code></pre>
  * So that you can use the addSmsService api to load your schema XML for example.
- * PluginTools javadoc may be found 
- * <a href="https://backstage.forgerock.com/docs/am/6/apidocs/org/forgerock/openam/plugins/PluginTools.html#addSmsService-java.io.InputStream-">here</a> 
+ * PluginTools javadoc may be found
+ * <a href="https://backstage.forgerock.com/docs/am/6/apidocs/org/forgerock/openam/plugins/PluginTools.html#addSmsService-java.io.InputStream-">here</a>
  * <p>
- *     It can be assumed that when running, implementations of this class will be singleton instances.
+ * It can be assumed that when running, implementations of this class will be singleton instances.
  * </p>
  * <p>
- *     It should <i>not</i> be expected that the runtime singleton instances will be the instances on which
- *     {@link #onAmUpgrade(String, String)} will be called. Guice-injected properties will also <i>not</i> be populated
- *     during that method call.
+ * It should <i>not</i> be expected that the runtime singleton instances will be the instances on which
+ * {@link #onAmUpgrade(String, String)} will be called. Guice-injected properties will also <i>not</i> be populated
+ * during that method call.
  * </p>
  * <p>
- *     Plugins should <i>not</i> use the {@code ShutdownManager}/{@code ShutdownListener} API for handling shutdown, as
- *     the order of calling those listeners is not deterministic. The {@link #onShutdown()} method for all plugins will
- *     be called in the reverse order from the order that {@link #onStartup()} was called, with dependent plugins being
- *     notified after their dependencies for startup, and before them for shutdown.
+ * Plugins should <i>not</i> use the {@code ShutdownManager}/{@code ShutdownListener} API for handling shutdown, as
+ * the order of calling those listeners is not deterministic. The {@link #onShutdown()} method for all plugins will
+ * be called in the reverse order from the order that {@link #onStartup()} was called, with dependent plugins being
+ * notified after their dependencies for startup, and before them for shutdown.
  * </p>
+ *
  * @since AM 5.5.0
  */
 
@@ -58,7 +59,7 @@ public class ClearPlugin extends AbstractNodeAmPlugin {
 
     /**
      * Specify the Map of list of node classes that the plugin is providing. These will then be installed and
-     *  registered at the appropriate times in plugin lifecycle.
+     * registered at the appropriate times in plugin lifecycle.
      *
      * @return The list of node classes.
      */
@@ -83,7 +84,7 @@ public class ClearPlugin extends AbstractNodeAmPlugin {
     /**
      * This method will be called when the version returned by {@link #getPluginVersion()} is higher than the
      * version already installed. This method will be called before the {@link #onStartup()} method.
-     *
+     * <p>
      * No need to implement this untils there are multiple versions of your auth node.
      *
      * @param fromVersion The old version of the plugin that has been installed.
@@ -95,7 +96,8 @@ public class ClearPlugin extends AbstractNodeAmPlugin {
 
         try {
             pluginTools.upgradeAuthNode(ClearNode.class);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new PluginException(e.getMessage());
         }
         super.upgrade(fromVersion);
