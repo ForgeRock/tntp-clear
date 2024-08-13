@@ -1,6 +1,6 @@
-# PingOne Authorize
+# CLEAR ID Verification
 
-The PingOne Authorize node lets administrators integrate PingOne Authorize functionality in a Journey.
+The CLEAR ID Verification node lets administrators integrate CLEAR's hosted UI for verification inside a Journey.
 
 ## Compatibility
 
@@ -33,13 +33,7 @@ The PingOne Authorize node lets administrators integrate PingOne Authorize funct
 
 ## Inputs
 
-This node retrieves from the journey state:
-* **The AttributeMap**
-
-Additionally, the node first looks in the journey state for the following data:
-* **PingOne Authorize Policy Attribute(s):** defined within the Policy that corresponds to the active Decision Endpoint.
-
-The node searches the journey shared state for these attributes.
+Everything this node needs is configured within the node.
 
 ## Configuration
 
@@ -50,54 +44,41 @@ The node searches the journey shared state for these attributes.
   </thead>
 
   <tr>
-    <td>PingOne Service</td>
-      <td>Service for PingOne, PingOne DaVinci API, PingOne Protect nodes, and PingOne Verify nodes
+    <td>CLEAR API Key</td>
+      <td>Environment API Key for CLEAR.
       </td>
   </tr>
   <tr>
-    <td>Decision Endpoint ID</td>
-    <td>The Decision Endpoint ID from the PingOne Authorize service.</td>
+    <td>Project ID</td>
+    <td>The Project ID for the desired CLEAR project.
+    </td>
 
   </tr>
   <tr>
-    <td>Attribute Map</td>
-    <td>Map shared state attributes to the request parameters for the PingOne Authorize decision request.
+    <td>Redirect URL</td>
+    <td>The target URL for the post-verification redirect.
     </td>
   </tr>
   <tr>
-    <td>Statement Codes</td>
-    <td>Defines the PingOne Authorize Node outcomes based off of the statements from the PingOne Authorize decision.
+    <td>Use Secure Endpoint</td>
+    <td>If the toggle is enabled, the Secure Endpoint will be used to retrieves user verification results; otherwise, the Standard Endpoint is used.
     </td>
   </tr>
-  <tr>
-    <td>Continue</td>
-    <td>Use the continue toggle for a single outcome.
-    </td>
-  </tr>
-
 </table>
 
 ## Outputs
 
-This node produces no outputs.
+This node retrieves the user's verification results and stores them in transient state.
 
 ## Outcomes
 
-`Permit`
+`Continue`
 
-Satisfied the active policy's permit condition and authorized the user.
-
-`Deny`
-
-Satisfied the active policy's deny condition and did not authorize the user.
-
-`Indeterminate`
-
-Satisfied neither the active policy's permit or deny conditions.
+Successfully verified and redirected the user.
 
 `Error`
 
-There was an error during the authorization process.
+There was an error during the verification process.
 
 ## Troubleshooting
 

@@ -48,9 +48,6 @@
 //
 //    ClearNode node;
 //
-//    private static final String USER = "testUser";
-//    public static final String PINGONE_AUTHORIZE_ATTRIBUTE = "some-attribute-key";
-//
 //    @BeforeEach
 //    public void setup() throws Exception {
 //
@@ -58,70 +55,31 @@
 //    }
 //
 //    @Test
-//    public void testPingOneUserIdNotFoundInSharedState() throws Exception {
+//    public void testReturnOutcomeClear() throws Exception {
 //        // Given
-//        JsonValue sharedState = json(object(field(USERNAME, USER), field(REALM, "/realm")));
-//        JsonValue transientState = json(object());
-//
-//        // When
-//        Action result = node.process(getContext(sharedState, transientState, emptyList()));
-//
-//        // Then
-//        assertThat(result.outcome).isEqualTo(CLIENT_ERROR_OUTCOME_ID);
-//    }
-//
-//    @ParameterizedTest
-//    @CsvSource({
-//            "PERMIT,permit",
-//            "DENY,deny",
-//            "INDETERMINATE,indeterminate",
-//    })
-//    public void testReturnOutcomePingOneAuthorize(String decision, String expectedOutcome) throws Exception {
-//        // Given
-//        JsonValue sharedState = json(object(
-//                field(REALM, "/realm")));
+//        JsonValue sharedState = json(object(1));
+//        sharedState.put(REALM, "/realm");
 //
 //        given(config.apiKey()).willReturn("some-api-key");
 //        given(config.projectId()).willReturn("some-project-id");
 //        given(config.redirectUrl()).willReturn("some-redirect-url");
+//        given(config.secureEndpointToggle()).willReturn(true);
 //
-//        JsonValue response = null;
+//        JsonValue response = json(object(1));
 //
-//        if (decision.equals("PERMIT")) {
-//            response = json(object(
-//                    field("decision", decision)));
-//        } else if (decision.equals("DENY")) {
-//            response = json(object(
-//                    field("decision", decision)));
-//        } else if (decision.equals("INDETERMINATE")) {
-//            response = json(object(
-//                    field("decision", decision)));
-//        }
+//        String sessionId = "some-session-id";
+//        String sessionToken = "some-session-token";
 //
-//        when(client.createVerificationSession(any(), any(), any())).thenReturn(response);
+//        response.put("id", sessionId);
+//        response.put("token", sessionToken);
+//
+//        when(client.createVerificationSession(any(), any(), any(), any())).thenReturn(response);
 //
 //        // When
 //        Action result = node.process(getContext(sharedState, json(object()), emptyList()));
 //
 //        // Then
-//        assertThat(result.outcome).isEqualTo(expectedOutcome);
-//    }
-//
-//    @Test
-//    public void testPingOneCommunicationFailed() throws Exception {
-//        // Given
-//        JsonValue sharedState = json(object(
-//                field(USERNAME, USER),
-//                field(REALM, "/realm"),
-//                field(PINGONE_AUTHORIZE_ATTRIBUTE, "some-attribute-value")
-//                                           ));
-//        JsonValue transientState = json(object());
-//
-//        // When
-//        Action result = node.process(getContext(sharedState, transientState, emptyList()));
-//
-//        // Then
-//        assertThat(result.outcome).isEqualTo(CLIENT_ERROR_OUTCOME_ID);
+//        assertThat(result.outcome).isEqualTo("continue");
 //    }
 //
 //    @Test

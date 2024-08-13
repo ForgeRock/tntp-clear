@@ -102,6 +102,7 @@ public class ClearClient {
      * @throws ClearServiceException When API response != 200
      */
     public JsonValue getUserVerificationResults(
+            String verificationResultsEndpoint,
             String apiKey,
             String verificationSessionId) throws ClearServiceException {
 
@@ -109,7 +110,8 @@ public class ClearClient {
 
         // Create the request url
         URI uri = URI.create(
-                "https://verified.clearme.com/v1/verification_sessions/" +
+                verificationResultsEndpoint +
+                        "/v1/verification_sessions/" +
                         verificationSessionId);
 
         try {

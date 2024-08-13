@@ -4,9 +4,9 @@
  * Copyright 2024 Ping Identity Corporation. All Rights Reserved
 -->
 
-# CLEAR ID Verification
+# CLEAR
 
-This integration creates a verification session, directs the user to CLEAR's hosted UI for verification, and then redirects them to the final URL assigned by the service provider. This verification includes:
+This integration creates a verification session, directs the user to CLEAR's hosted UI for verification, and then redirects them to the final URL assigned by the administrator. This verification includes:
 
 * [CLEAR's Verification UI Link](https://docs.clearme.com/docs/link-integration#create-a-verification-session)
 
@@ -16,11 +16,8 @@ Identity Cloud provides the following artifacts to enable the CLEAR ID Verificat
 
 You must set up the following before using the CLEAR Verification ID node.
 
-PingOne Authorize Setup:
-* [Create an authorize policy](https://docs.pingidentity.com/r/en-us/pingone/p1az_policies)
-* [Create a worker application](https://docs.pingidentity.com/r/en-us/pingone/p1_add_app_worker)
-    * Requires [Identity Data Admin](https://apidocs.pingidentity.com/pingone/platform/v1/api/#roles) role
-* [PingOne service](https://github.com/ForgeRock/tntp-ping-service/tree/cloudprep?tab=readme-ov-file#ping-one-service)
+CLEAR Setup:
+* [Access CLEAR Verified Dashboard]()
 
 <!-- SUPPORT -->
 ## Support

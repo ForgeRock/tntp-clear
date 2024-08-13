@@ -80,6 +80,16 @@ public class ClearNode implements Node {
          */
         @Attribute(order = 300)
         String redirectUrl();
+
+        /**
+         * Toggle attribute that determines the endpoint of the final HTTP GET request
+         *
+         * @return True if the toggle is set to the Secure Endpoint, otherwise false
+         */
+        @Attribute(order = 400)
+        default boolean secureEndpointToggle(){
+            return true;
+        }
     }
 
     /**
@@ -100,20 +110,17 @@ public class ClearNode implements Node {
         // Create the flow input based on the node state
         NodeState nodeState = context.getStateFor(this);
 
+        // Store parameters of the API request
         Map<String, List<String>> parameters = context.request.parameters;
 
         try {
-
-            /*
-                TO-DO: Fix shared state issue
-            */
             // Check if verification session id is set in sharedState
             String sharedStateSessionId = nodeState.isDefined(SESSION_ID)
                     ? nodeState.get(SESSION_ID).asString()
                     : null;
 
-            // Checks if NONCE value exists in the parameters object.
-            // If not, continue to create verification session
+            // Checks if NONCE value exists in the API request parameters.
+            // If false, create the verification session
             if (!parameters.containsKey(NONCE)) {
 
                 // Create nonce value to include with the API Call's redirect URL
@@ -128,7 +135,7 @@ public class ClearNode implements Node {
                 );
 
                 // Store the `verification_session.id` from the response
-                // This ID will be used in the GET request after redirecting from CLEAR to the final URL
+                // This will be used to identify which session the GET request will return data for
                 String verificationSessionId = verificationSessionResponse.get(VERIFICATION_SESSION_ID).asString();
 
                 // Add `verification_session.id` and the newly generated nonce to node shared state
@@ -159,8 +166,17 @@ public class ClearNode implements Node {
                     return Action.goTo(CLIENT_ERROR_OUTCOME_ID).build();
                 }
 
+                // Check the value of the toggle button for desired endpoint
+                String verificationResultsEndpoint;
+                if (config.secureEndpointToggle()) {
+                    verificationResultsEndpoint = "https://secure.verified.clearme.com";
+                } else {
+                    verificationResultsEndpoint = "https://verified.clearme.com";
+                }
+
                 // API call to check user's authentication status
                 JsonValue verificationResultsResponse = client.getUserVerificationResults(
+                        verificationResultsEndpoint,
                         config.apiKey(),
                         sharedStateSessionId
                 );
