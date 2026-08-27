@@ -63,7 +63,7 @@ public class ClearClient {
         Request request;
 
         // Create the request url
-        URI uri = URI.create("https://verified.clearme.com/v1/verification_sessions/");
+        URI uri = URI.create("https://verified.clearme.com/v1/verification_sessions");
 
         // Create the request body
         JsonValue parameters = json(object(1));
