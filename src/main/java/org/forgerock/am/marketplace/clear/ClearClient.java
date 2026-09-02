@@ -68,7 +68,7 @@ public class ClearClient {
         // Create the request body
         JsonValue parameters = json(object(1));
         parameters.put("project_id", projectId);
-        parameters.put("redirect_url", redirectUrl + "?nonce=" + nonce);
+        parameters.put("redirect_url", appendNonceToRedirectUrl(redirectUrl, nonce));
 
         try {
             request = new Request().setUri(uri).setMethod("POST");
@@ -143,5 +143,18 @@ public class ClearClient {
         BearerToken bearerToken = new BearerToken(accessToken);
         header.setRawValue(BearerToken.NAME + " " + bearerToken);
         request.addHeaders(header);
+    }
+
+    /**
+     * Appends the nonce to the redirect URL as a query parameter, using the correct
+     * separator depending on whether the URL already contains a query string.
+     *
+     * @param redirectUrl The administrator-configured redirect URL
+     * @param nonce       The nonce value to append
+     * @return The redirect URL with the nonce appended
+     */
+    private static String appendNonceToRedirectUrl(String redirectUrl, String nonce) {
+        String separator = redirectUrl.contains("?") ? "&" : "?";
+        return redirectUrl + separator + "nonce=" + nonce;
     }
 }
