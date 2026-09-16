@@ -15,7 +15,7 @@ import java.util.*;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.forgerock.openam.annotations.sm.Attribute;
 import org.forgerock.openam.auth.node.api.NodeState;
 import org.forgerock.util.i18n.PreferredLocales;
